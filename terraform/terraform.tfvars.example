@@ -1,0 +1,4 @@
+env          = "dev"
+project_name = "tkxel"
+admin_ip     = "125.209.112.98/32"
+key_name     = "web_server_key"

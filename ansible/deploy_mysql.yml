@@ -1,0 +1,8 @@
+- name: Install mysql database deployment
+  hosts: backend
+  become: yes
+  vars_files:
+    - group_vars/all.yml      # 🔐 Encrypted vars
+    - group_vars/vault.yml      # 🔐 Encrypted vars   
+  roles:
+    - role: mysql

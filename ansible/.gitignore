@@ -1,0 +1,75 @@
+# --- ANSIBLE GENERATED FILES ---
+# Retry files are automatically created on playbook failures
+*.retry
+
+# Log files from Ansible runs
+*.log
+
+# Local inventory cache files (if using fact caching or dynamic inventory)
+*.cache
+*.json
+*.ini
+
+# Fact cache directories (if using JSON/YAML fact caching)
+fact_cache/
+facts_cache/
+*.fact
+
+# --- PYTHON BYTECODE / CACHES ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pkl
+*.egg-info/
+
+# --- TEMPORARY / BACKUP FILES ---
+*.tmp
+*.bak
+*~
+*.swp
+*.swo
+*.orig
+
+# --- ROLES / COLLECTIONS ---
+# If you use ansible-galaxy to install roles/collections locally, ignore them
+roles/*/
+collections/*/
+!roles/requirements.yml
+!collections/requirements.yml
+
+# --- INVENTORY FILES ---
+# Ignore sensitive inventories that contain IPs, credentials, or private hosts
+inventory/
+inventories/
+hosts
+*.vault
+*.enc
+
+# --- PRIVATE KEYS / SSH KEYS ---
+*.pem
+*.key
+*.crt
+*.csr
+*.pub
+.ssh/
+
+# --- ANSIBLE CONFIGS (local only) ---
+# User-specific ansible.cfg overrides
+ansible.cfg
+.ansible/
+
+# --- OUTPUT ARTIFACTS ---
+# When you run playbooks with --diff or --check modes
+diffs/
+*.diff
+*.patch
+
+# --- EDITOR / OS FILES ---
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.vscode/
+.idea/
+*.code-workspace

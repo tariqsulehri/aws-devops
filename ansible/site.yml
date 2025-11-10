@@ -1,0 +1,23 @@
+---
+- name: Deploy nginx on web servers
+  hosts: frontend
+  become: yes
+
+  vars_files:
+    - group_vars/all.yml      #  Encrypted vars
+    - group_vars/vault.yml      # Encrypted vars
+
+  roles:
+      - role: nginx
+      - role: react_app
+
+- name: Node Server Deployment on backend servers
+  hosts: backend
+  become: yes
+  vars_files:
+    - group_vars/all.yml      #  Encrypted vars
+    - group_vars/vault.yml      #  Encrypted vars   
+  roles:
+    - role: node_server
+
+

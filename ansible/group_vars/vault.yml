@@ -1,0 +1,4 @@
+# group_vars/vault.yml
+github_token: "{{ lookup('env', 'GITHUB_TOKEN') }}"
+github_react_repo_url: "https://{{ lookup('env', 'GITHUB_TOKEN') }}@github.com/tariqsulehri/react_fe.git"
+github_nodejs_repo_url: "https://{{ lookup('env', 'GITHUB_TOKEN') }}@github.com/tariqsulehri/node_be.git"
