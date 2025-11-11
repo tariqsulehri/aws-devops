@@ -1,37 +1,41 @@
 name: Terraform CI/CD
 
+# Workflow triggers manually via GitHub UI
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-
-env:
-  AWS_ACCESS_KEY_ID: "${{ secrets.AWS_ACCESS_KEY_ID }}"
-  AWS_SECRET_ACCESS_KEY: "${{ secrests.AWS_SECRET_ACCESS_KEY}}"
-  # AWS_REGION: ${{ secrets.AWS_REGION }}
-  # TF_BUCKET: ${{ secrets.TF_BUCKET }}
-  # TF_DYNAMODB_TABLE: ${{ secrets.TF_DYNAMODB_TABLE }}
-  # TF_STATE_KEY: ${{ secrets.TF_STATE_KEY || 'terraform/infra.tfstate' }}
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Choose Terraform action'
+        required: true
+        default: 'apply'
+        type: choice
+        options:
+          - apply
+          - destroy
 
 jobs:
   terraform:
-    name: "Terraform Apply / Destroy"
+    name: Terraform Apply / Destroy
     runs-on: ubuntu-22.04
-
     permissions:
       contents: read
       id-token: write
 
+    env:
+      AWS_REGION: "eu-north-1"
+
     steps:
+      # 1️⃣ Checkout repository
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 2️⃣ Install Terraform
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.8.5
 
+      # 3️⃣ Configure AWS credentials
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -39,56 +43,25 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      # 4️⃣ Initialize Terraform (backend pre-configured in provider/main.tf)
       - name: Terraform Init
-        run: |
-          terraform init 
-      # -reconfigure \
-      #   -backend-config="bucket=${TF_BUCKET}" \
-      #   -backend-config="key=${TF_STATE_KEY}" \
-      #   -backend-config="region=${AWS_REGION}" \
-      #   -backend-config="dynamodb_table=${TF_DYNAMODB_TABLE}" \
-      #   -backend-config="encrypt=true"
+        run: terraform init
 
+      # 5️⃣ Validate Terraform code
       - name: Terraform Validate
         run: terraform validate
 
+      # 6️⃣ Terraform Plan (only for apply)
       - name: Terraform Plan
+        if: github.event.inputs.action == 'apply'
         run: terraform plan -input=false -out=tfplan
 
+      # 7️⃣ Terraform Apply (only for apply)
       - name: Terraform Apply
-      #if: github.ref == 'refs/heads/staging'
+        if: github.event.inputs.action == 'apply'
         run: terraform apply -auto-approve tfplan
 
-  destroy:
-    name: "Terraform Destroy"
-    runs-on: ubuntu-22.04
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'destroy'
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.8.5
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Terraform Init
-        run: |
-          terraform init 
-        # -reconfigure \
-        # -backend-config="bucket=${{ secrets.TF_BUCKET }}" \
-        # -backend-config="key=${{ secrets.TF_STATE_KEY }}" \
-        # -backend-config="region=${{ secrets.AWS_REGION }}" \
-        # -backend-config="dynamodb_table=${{ secrets.TF_DYNAMODB_TABLE }}" \
-        # -backend-config="encrypt=true"
-
+      # 8️⃣ Terraform Destroy (only for destroy)
       - name: Terraform Destroy
+        if: github.event.inputs.action == 'destroy'
         run: terraform destroy -auto-approve
