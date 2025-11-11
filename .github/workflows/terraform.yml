@@ -1,0 +1,94 @@
+name: Terraform CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+env:
+  AWS_ACCESS_KEY_ID: "${{ secrets.AWS_ACCESS_KEY_ID }}"
+  AWS_SECRET_ACCESS_KEY: "${{ secrests.AWS_SECRET_ACCESS_KEY}}"
+  # AWS_REGION: ${{ secrets.AWS_REGION }}
+  # TF_BUCKET: ${{ secrets.TF_BUCKET }}
+  # TF_DYNAMODB_TABLE: ${{ secrets.TF_DYNAMODB_TABLE }}
+  # TF_STATE_KEY: ${{ secrets.TF_STATE_KEY || 'terraform/infra.tfstate' }}
+
+jobs:
+  terraform:
+    name: "Terraform Apply / Destroy"
+    runs-on: ubuntu-22.04
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8.5
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform Init
+        run: |
+          terraform init 
+      # -reconfigure \
+      #   -backend-config="bucket=${TF_BUCKET}" \
+      #   -backend-config="key=${TF_STATE_KEY}" \
+      #   -backend-config="region=${AWS_REGION}" \
+      #   -backend-config="dynamodb_table=${TF_DYNAMODB_TABLE}" \
+      #   -backend-config="encrypt=true"
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan -input=false -out=tfplan
+
+      - name: Terraform Apply
+      #if: github.ref == 'refs/heads/staging'
+        run: terraform apply -auto-approve tfplan
+
+  destroy:
+    name: "Terraform Destroy"
+    runs-on: ubuntu-22.04
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'destroy'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8.5
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Terraform Init
+        run: |
+          terraform init 
+        # -reconfigure \
+        # -backend-config="bucket=${{ secrets.TF_BUCKET }}" \
+        # -backend-config="key=${{ secrets.TF_STATE_KEY }}" \
+        # -backend-config="region=${{ secrets.AWS_REGION }}" \
+        # -backend-config="dynamodb_table=${{ secrets.TF_DYNAMODB_TABLE }}" \
+        # -backend-config="encrypt=true"
+
+      - name: Terraform Destroy
+        run: terraform destroy -auto-approve
