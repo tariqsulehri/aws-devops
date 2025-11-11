@@ -45,6 +45,7 @@ jobs:
 
       # 4️⃣ Initialize Terraform (backend pre-configured in provider/main.tf)
       - name: Terraform Init
+        working-directory: terraform/src
         run: terraform init
 
       # 5️⃣ Validate Terraform code
@@ -64,4 +65,5 @@ jobs:
       # 8️⃣ Terraform Destroy (only for destroy)
       - name: Terraform Destroy
         if: github.event.inputs.action == 'destroy'
+        working-directory: terraform/src
         run: terraform destroy -auto-approve
