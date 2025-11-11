@@ -15,7 +15,7 @@ on:
 
 jobs:
   terraform:
-    name: Terraform Apply / Destroy
+    name: Terraform Apply or Destroy
     runs-on: ubuntu-22.04
     permissions:
       contents: read
@@ -65,5 +65,5 @@ jobs:
       # 8️⃣ Terraform Destroy (only for destroy)
       - name: Terraform Destroy
         if: github.event.inputs.action == 'destroy'
-        working-directory: terraform/src
+        # working-directory: terraform/src
         run: terraform destroy -auto-approve
