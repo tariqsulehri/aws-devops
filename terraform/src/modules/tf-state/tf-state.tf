@@ -2,18 +2,18 @@
 # S3 bucket for terraform state
 resource "aws_s3_bucket" "terraform_state" {
   bucket = var.bucket_name
-  force_destroy = true # DON'T set true for production state buckets; change only if you understand implications
+  force_destroy = var.force_destroy # DON'T set true for production state buckets; change only if you understand implications
 }
 
 # Block public access
-# resource "aws_s3_bucket_public_access_block" "tf_state" {
-#   bucket = aws_s3_bucket.tf_state.id
+resource "aws_s3_bucket_public_access_block" "terraform_state" {
+  bucket = aws_s3_bucket.terraform_state.id
 
-#   block_public_acls       = true
-#   block_public_policy     = true
-#   ignore_public_acls      = true
-#   restrict_public_buckets = true
-# }
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
 
 # Enable versioning
 resource "aws_s3_bucket_versioning" "terraform_bucket_versioning" {
@@ -35,8 +35,8 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "terraform_state_c
 }
 
 # # Optional: lifecycle rule to expire non-current versions or incomplete multipart uploads (helps cost control)
-# resource "aws_s3_bucket_lifecycle_configuration" "tf_state" {
-#   bucket = aws_s3_bucket.tf_state.id
+# resource "aws_s3_bucket_lifecycle_configuration" "terraform_state" {
+#   bucket = aws_s3_bucket.terraform_state.id
 
 #   rule {
 #     id     = "expire-noncurrent-versions"
@@ -54,7 +54,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "terraform_state_c
 
 # DynamoDB table for state locking
 resource "aws_dynamodb_table" "terraform_locks" {
-  name         = "terraform-state-locking"
+  name         = var.dynamodb_table_name
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "LockID"
   attribute {

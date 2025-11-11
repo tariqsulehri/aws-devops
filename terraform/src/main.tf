@@ -10,11 +10,12 @@
 # Creates a VPC, public + private subnets, and outputs IDs
 # ----------------------------------------------------
 # VPC module (keeps the same inputs you were using)
-
-module "tf-state" {
-  source      = "./modules/tf-state"
-  bucket_name = "tf-state-bucket-ci-cd"
-}
+# module "tf_state" {
+#   source              = "./modules/tf-state"
+#   bucket_name         = "tf-state-bucket-ci-cd"
+#   dynamodb_table_name = "terraform-state-locking"
+#   force_destroy       = true
+# }
 
 ##############################################
 # ROOT MAIN - module wiring
@@ -73,51 +74,48 @@ module "frontend_ec2" {
   # ami_id             = ""
 }
 
-
-
 # ----------------------------------------------------
 # 5️⃣ EC2 Module for Backend (Node.js)
 # Creates EC2 instance in private subnet
 # ----------------------------------------------------
+module "backend_ec2" {
+  source        = "./modules/ec2"
+  project_name  = var.project_name
+  instance_name = "${var.project_name}-backend"
+  instance_type = "t3.micro"
+  key_name      = "web_server_key"
+  subnet_id     = module.vpc.private_subnet_ids[0]
+  env           = var.env
+  # Networking configuration
+  # subnet_id           = element(module.vpc.private_subnet_ids, 0)
+  security_group_ids = [
+    module.security_groups.admin_sg_id,  # Optional SSH Access (via Bastion or VPN)
+    module.security_groups.backend_sg_id # Internal API Access
+  ]
+  # Common tags
+  tags = merge(var.tags, { Role = "Backend" })
+}
 
-# module "backend_ec2" {
-#   source        = "./modules/ec2"
-#   project_name  = var.project_name
-#   instance_name = "${var.project_name}-backend"
-#   instance_type = "t3.micro"
-#   key_name      = "web_server_key"
-#   subnet_id     = module.vpc.private_subnet_ids[0]
-#   env           = var.env
-#   # Networking configuration
-#   # subnet_id           = element(module.vpc.private_subnet_ids, 0)
-#   security_group_ids = [
-#     module.security_groups.admin_sg_id,  # Optional SSH Access (via Bastion or VPN)
-#     module.security_groups.backend_sg_id # Internal API Access
-#   ]
-#   # Common tags
-#   tags = merge(var.tags, { Role = "Backend" })
-# }
 
+locals {
+  instance_map = {
+    backend1 = module.backend_ec2.ec2_instance_id
+  }
+}
 
-# locals {
-#   instance_map = {
-#     backend1 = module.backend_ec2.ec2_instance_id
-#   }
-# }
-
-# module "alb" {
-#   source = "./modules/alb"
-#   project_name       = var.project_name
-#   env                = var.env
-#   vpc_id             = module.vpc.vpc_id
-#   public_subnet_ids  = module.vpc.public_subnet_ids
-#   security_group_ids = [module.security_groups.alb_sg_id]
-#   instance_map       = local.instance_map
-#   target_port        = var.app_port
-#   health_check_path = "/health"
-#   enable_https      = false
-#   tags              = var.tags
-# }
+module "alb" {
+  source = "./modules/alb"
+  project_name       = var.project_name
+  env                = var.env
+  vpc_id             = module.vpc.vpc_id
+  public_subnet_ids  = module.vpc.public_subnet_ids
+  security_group_ids = [module.security_groups.alb_sg_id]
+  instance_map       = local.instance_map
+  target_port        = var.app_port
+  health_check_path = "/health"
+  enable_https      = false
+  tags              = var.tags
+}
 
 
 # ----------------------------------------------------
