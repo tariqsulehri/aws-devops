@@ -39,28 +39,32 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      # 4️⃣ Initialize Terraform (backend pre-configured in provider/main.tf)
+          aws-access-key-id: "${{ secrets.AWS_ACCESS_KEY_ID }}"
+          aws-secret-access-key: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+          aws-region: "${{ env.AWS_REGION }}"      
       - name: Terraform Init
         working-directory: terraform/src
         run: terraform init
 
-      # 5️⃣ Validate Terraform code
+      
+      - name: Terraform fmt
+        id: fmt
+        run: terraform fmt -check
+        continue-on-error: true
+      
+        # 5️⃣ Validate Terraform code
       - name: Terraform Validate
-        run: terraform validate
+        run: terraform validate -no-color
 
       # 6️⃣ Terraform Plan (only for apply)
       - name: Terraform Plan
         if: github.event.inputs.action == 'apply'
-        run: terraform plan -input=false -out=tfplan
+        run: terraform plan -input=false #-out=tfplan
 
       # 7️⃣ Terraform Apply (only for apply)
       - name: Terraform Apply
         if: github.event.inputs.action == 'apply'
-        run: terraform apply -auto-approve tfplan
+        run: terraform apply -auto-approve # tfplan
 
       # 8️⃣ Terraform Destroy (only for destroy)
       - name: Terraform Destroy
