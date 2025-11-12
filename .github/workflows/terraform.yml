@@ -48,7 +48,6 @@ jobs:
             -backend-config="key=infra/terraform.tfstate" \
             -backend-config="region=${{ env.AWS_REGION }}" \
             -backend-config="encrypt=true"
-            -backend-config="admin_ip=${{ env.ADMIN_IP }}"
 
       # 5️⃣ Terraform Format Check
       - name: Terraform Format
