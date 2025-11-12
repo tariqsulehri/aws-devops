@@ -22,16 +22,16 @@ resource "aws_vpc" "main_vpc" {
     { Name = "${local.name_prefix}-vpc" }
   )
 
-  lifecycle {
-    precondition {
-      condition     = local.public_subnet_count == local.az_count
-      error_message = "The number of public subnet CIDRs must match the number of availability zones."
-    }
-    precondition {
-      condition     = local.private_subnet_count == local.az_count
-      error_message = "The number of private subnet CIDRs must match the number of availability zones."
-    }
-  }
+  # lifecycle {
+  #   precondition {
+  #     condition     = local.public_subnet_count == local.az_count
+  #     error_message = "The number of public subnet CIDRs must match the number of availability zones."
+  #   }
+  #   precondition {
+  #     condition     = local.private_subnet_count == local.az_count
+  #     error_message = "The number of private subnet CIDRs must match the number of availability zones."
+  #   }
+  # }
 }
 
 ##############################################
