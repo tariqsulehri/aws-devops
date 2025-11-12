@@ -22,6 +22,18 @@ resource "aws_vpc" "main_vpc" {
     var.tags,
     { Name = "${local.name_prefix}-vpc" }
   )
+
+lifecycle {
+    precondition {
+      condition     = length(var.public_subnet_cidrs) == length(var.availability_zones)
+      error_message = "The number of public subnet CIDRs (${length(var.public_subnet_cidrs)}) must match the number of availability zones (${length(var.availability_zones)})."
+    }
+    precondition {
+      condition     = length(var.private_subnet_cidrs) == length(var.availability_zones)
+      error_message = "The number of private subnet CIDRs (${length(var.private_subnet_cidrs)}) must match the number of availability zones (${length(var.availability_zones)})."
+    }
+  }
+
 }
 
 # 2️⃣ Create the Internet Gateway for public subnets
@@ -36,7 +48,12 @@ resource "aws_internet_gateway" "internet_gateway" {
 
 # 3️⃣ Create Public Subnets (for frontend, load balancers, etc.)
 resource "aws_subnet" "public_subnets" {
-  for_each = zipmap(var.availability_zones, var.public_subnet_cidrs)
+  for_each = {
+    for idx, az in var.availability_zones :
+    az => {
+      cidr_block = var.public_subnet_cidrs[idx]
+    }
+  }
 
   vpc_id                  = aws_vpc.main_vpc.id
   cidr_block              = each.value
@@ -47,7 +64,7 @@ resource "aws_subnet" "public_subnets" {
     var.tags,
     {
       Name = "${local.name_prefix}-public-${each.key}"
-      Tier = "public"
+      Tier = "Public"
     }
   )
 }
@@ -57,7 +74,12 @@ resource "aws_subnet" "public_subnets" {
 # Create Private Subnets (1 per AZ)
 ##############################################
 resource "aws_subnet" "private_subnets" {
-  for_each = zipmap(var.availability_zones, var.private_subnet_cidrs)
+   for_each = {
+    for idx, az in var.availability_zones :
+    az => {
+      cidr_block = var.private_subnet_cidrs[idx]
+    }
+   }
 
   vpc_id                  = aws_vpc.main_vpc.id
   cidr_block              = each.value
@@ -66,7 +88,7 @@ resource "aws_subnet" "private_subnets" {
 
   tags = merge(var.tags, {
     Name = "${var.project_name}-${var.env}-private-${each.key}"
-    Tier = "private"
+    Tier = "Private"
   })
 }
 
