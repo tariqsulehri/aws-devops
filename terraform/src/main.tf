@@ -21,6 +21,12 @@
 # ROOT MAIN - module wiring
 ##############################################
 
+vpc_cidr             = "10.0.0.0/16"
+availability_zones   = ["eu-north-1a", "eu-north-1b"]
+public_subnet_cidrs  = ["10.0.1.0/24", "10.0.3.0/24"]
+private_subnet_cidrs = ["10.0.2.0/24", "10.0.4.0/24"]
+
+
 module "vpc" {
   source = "./modules/vpc"
   # naming + tags
@@ -28,10 +34,17 @@ module "vpc" {
   env          = var.env
   tags         = var.tags
   # networking
-  vpc_cidr             = var.vpc_cidr
-  availability_zones   = var.availability_zones
-  public_subnet_cidrs  = var.public_subnet_cidrs
-  private_subnet_cidrs = var.private_subnet_cidrs
+  # vpc_cidr             = var.vpc_cidr
+  # availability_zones   = var.availability_zones
+  # public_subnet_cidrs  = var.public_subnet_cidrs
+  # private_subnet_cidrs = var.private_subnet_cidrs
+vpc_cidr             = "10.0.0.0/16"
+availability_zones   = ["eu-north-1a", "eu-north-1b"]
+public_subnet_cidrs  = ["10.0.1.0/24", "10.0.3.0/24"]
+private_subnet_cidrs = ["10.0.2.0/24", "10.0.4.0/24"]
+
+
+
 }
 
 # ----------------------------------------------------
