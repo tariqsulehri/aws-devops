@@ -18,7 +18,7 @@ output "ec2_private_ip" {
 }
 output "ec2_public_ip" {
   description = "Elastic IP if allocated, else the instance public IP (if any)"
-  value       = (
+  value = (
     length(aws_eip.public_eip) > 0 ?
     aws_eip.public_eip[0].public_ip :
     aws_instance.ec2_instance.public_ip

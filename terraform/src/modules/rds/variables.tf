@@ -1,10 +1,10 @@
 variable "project_name" {
-    description = "Project name"
+  description = "Project name"
 }
 
-variable "env"{
-    description = "Environment production and staging"
-    type =  string
+variable "env" {
+  description = "Environment production and staging"
+  type        = string
 }
 variable "private_subnet_ids" {
   description = "Private subnet IDs for RDS"
@@ -46,6 +46,6 @@ variable "port" {
   default = 3306
 }
 variable "tags" {
-  type = map(string)
+  type    = map(string)
   default = {}
 }

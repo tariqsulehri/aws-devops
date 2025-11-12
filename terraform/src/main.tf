@@ -112,7 +112,7 @@ locals {
 }
 
 module "alb" {
-  source = "./modules/alb"
+  source             = "./modules/alb"
   project_name       = var.project_name
   env                = var.env
   vpc_id             = module.vpc.vpc_id
@@ -120,9 +120,9 @@ module "alb" {
   security_group_ids = [module.security_groups.alb_sg_id]
   instance_map       = local.instance_map
   target_port        = var.app_port
-  health_check_path = "/health"
-  enable_https      = false
-  tags              = var.tags
+  health_check_path  = "/health"
+  enable_https       = false
+  tags               = var.tags
 }
 
 

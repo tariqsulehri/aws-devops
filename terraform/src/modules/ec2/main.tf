@@ -43,7 +43,7 @@ resource "aws_instance" "ec2_instance" {
   monitoring = true
 
   # Optional user_data can be passed for initial setup (e.g., Ansible or shell)
-#   user_data = var.user_data != "" ? var.user_data : null
+  #   user_data = var.user_data != "" ? var.user_data : null
 
   # To ensure EC2 is replaced only when required (safe provisioning)
   lifecycle {
@@ -76,11 +76,11 @@ resource "aws_eip" "public_eip" {
 # ----------------------------------------------------
 output "instance_summary" {
   value = {
-    instance_name  = var.instance_name
-    instance_id    = aws_instance.ec2_instance.id
-    instance_type  = aws_instance.ec2_instance.instance_type
-    private_ip     = aws_instance.ec2_instance.private_ip
-    public_ip      = var.allocate_eip ? aws_eip.public_eip[0].public_ip : aws_instance.ec2_instance.public_ip
-    subnet_id      = var.subnet_id
+    instance_name = var.instance_name
+    instance_id   = aws_instance.ec2_instance.id
+    instance_type = aws_instance.ec2_instance.instance_type
+    private_ip    = aws_instance.ec2_instance.private_ip
+    public_ip     = var.allocate_eip ? aws_eip.public_eip[0].public_ip : aws_instance.ec2_instance.public_ip
+    subnet_id     = var.subnet_id
   }
 }

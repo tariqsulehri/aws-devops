@@ -3,10 +3,10 @@
 ##############################################
 
 locals {
-  name_prefix           = "${var.project_name}-${var.env}"
-  az_count              = length(var.availability_zones)
-  public_subnet_count   = length(var.public_subnet_cidrs)
-  private_subnet_count  = length(var.private_subnet_cidrs)
+  name_prefix          = "${var.project_name}-${var.env}"
+  az_count             = length(var.availability_zones)
+  public_subnet_count  = length(var.public_subnet_cidrs)
+  private_subnet_count = length(var.private_subnet_cidrs)
 }
 
 ##############################################

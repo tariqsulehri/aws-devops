@@ -23,7 +23,7 @@ variable "admin_ip" {
     Admin public IP in CIDR format allowed to SSH (e.g. 1.2.3.4/32).
     It's recommended to provide a /32 address for a single IP.
   EOT
-  type = string
+  type        = string
 
   validation {
     condition     = can(regex("^([0-9]{1,3}\\.){3}[0-9]{1,3}\\/([0-9]|[1-2][0-9]|3[0-2])$", var.admin_ip))

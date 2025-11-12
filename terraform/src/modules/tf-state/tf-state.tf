@@ -1,7 +1,7 @@
 
 # S3 bucket for terraform state
 resource "aws_s3_bucket" "terraform_state" {
-  bucket = var.bucket_name
+  bucket        = var.bucket_name
   force_destroy = var.force_destroy # DON'T set true for production state buckets; change only if you understand implications
 }
 
