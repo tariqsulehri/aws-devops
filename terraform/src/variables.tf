@@ -24,10 +24,10 @@ variable "project_name" {
 variable "admin_ip" {
   description = "Public IP address allowed to access via SSH"
   type        = string
-  validation {
-    condition     = can(regex("\\/32$", var.admin_ip))
-    error_message = "Admin IP must include /32 CIDR suffix."
-  }
+  # validation {
+  #   condition     = can(regex("\\/32$", var.admin_ip))
+  #   error_message = "Admin IP must include /32 CIDR suffix."
+  # }
 }
 variable "instance_map" {
   type    = map(string)

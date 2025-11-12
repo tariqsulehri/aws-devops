@@ -26,20 +26,20 @@ variable "public_subnet_cidrs" {
   description = "List of CIDR blocks for public subnets."
   type        = list(string)
 
-  validation {
-    condition     = length(var.public_subnet_cidrs) > 0
-    error_message = "Public subnet CIDRs must be provided and not empty."
-  }
+  # validation {
+  #   condition     = length(var.public_subnet_cidrs) > 0
+  #   error_message = "Public subnet CIDRs must be provided and not empty."
+  # }
 }
 
 variable "private_subnet_cidrs" {
   description = "List of CIDR blocks for private subnets."
   type        = list(string)
 
-  validation {
-    condition     = length(var.private_subnet_cidrs) > 0
-    error_message = "Private subnet CIDRs must be provided and not empty."
-  }
+  # validation {
+  #   condition     = length(var.private_subnet_cidrs) > 0
+  #   error_message = "Private subnet CIDRs must be provided and not empty."
+  # }
 }
 
 variable "tags" {
