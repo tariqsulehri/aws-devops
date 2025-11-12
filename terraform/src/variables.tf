@@ -24,7 +24,7 @@ variable "project_name" {
 variable "admin_ip" {
   description = "Public IP address allowed to access via SSH"
   type        = string
-  default = "125.209.112.98/32"
+  default     = "125.209.112.98/32"
   # validation {
   #   condition     = can(regex("\\/32$", var.admin_ip))
   #   error_message = "Admin IP must include /32 CIDR suffix."
