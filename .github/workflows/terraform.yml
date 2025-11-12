@@ -29,8 +29,8 @@ jobs:
       # 2️⃣ Set up Terraform
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "1.3.5"
+        # with:
+        #   terraform_version: "1.3.0"
 
       # 3️⃣ Configure AWS credentials using static secrets
       - name: Configure AWS Credentials
