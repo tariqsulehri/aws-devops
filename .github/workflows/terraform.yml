@@ -43,13 +43,11 @@ jobs:
       # 4️⃣ Terraform Init with backend config
       - name: Terraform Init
         run: |
-          # terraform -chdir="${{ env.TF_WORKING_DIR }}" init 
-          terraform init -backend-config="${{ env.TF_WORKING_DIR }}/backend-config.hcl"
-        # \
-        #   -backend-config="bucket=tf-state-bucket-ci-cd" \
-        #   -backend-config="key=infra/terraform.tfstate" \
-        #   -backend-config="region=${{ env.AWS_REGION }}" \
-        #   -backend-config="encrypt=true"
+          terraform -chdir="${{ env.TF_WORKING_DIR }}" init \
+            -backend-config="bucket=tf-state-bucket-ci-cd" \
+            -backend-config="key=infra/terraform.tfstate" \
+            -backend-config="region=${{ env.AWS_REGION }}" \
+            -backend-config="encrypt=true"
 
       # 5️⃣ Terraform Format Check
       - name: Terraform Format
