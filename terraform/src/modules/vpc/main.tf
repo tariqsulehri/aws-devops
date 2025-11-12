@@ -10,6 +10,8 @@
 
 locals {
   name_prefix = "${var.project_name}-${var.env}"
+  valid_public_subnets = length(var.public_subnet_cidrs) == length(var.availability_zones)
+  valid_private_subnets = length(var.private_subnet_cidrs) == length(var.availability_zones)
 }
 
 # 1️⃣ Create the VPC

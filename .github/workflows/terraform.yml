@@ -1,7 +1,7 @@
-name: Terraform CI/CD
+name: Terraform CI/CD with Github Actions
 
 # Workflow triggers manually via GitHub UI
-on:
+on: 
   workflow_dispatch:
     inputs:
       action:
@@ -43,10 +43,8 @@ jobs:
           aws-secret-access-key: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
           aws-region: "${{ env.AWS_REGION }}"      
       - name: Terraform Init
-        working-directory: terraform/src
-        run: terraform init
-
-      
+        
+        run: terraform -chdir=terraform/src init     
       - name: Terraform fmt
         id: fmt
         run: terraform fmt -check
@@ -59,12 +57,12 @@ jobs:
       # 6️⃣ Terraform Plan (only for apply)
       - name: Terraform Plan
         if: github.event.inputs.action == 'apply'
-        run: terraform plan -input=false #-out=tfplan
+        run: terraform -chdir=terraform/src  plan -input=false -out=tfplan
 
       # 7️⃣ Terraform Apply (only for apply)
       - name: Terraform Apply
-        if: github.event.inputs.action == 'apply'
-        run: terraform apply -auto-approve # tfplan
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply'
+        run: terraform -chdir=terraform/src apply -auto-approve  tfplan
 
       # 8️⃣ Terraform Destroy (only for destroy)
       - name: Terraform Destroy
