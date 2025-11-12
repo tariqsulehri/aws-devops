@@ -43,7 +43,8 @@ jobs:
       # 4️⃣ Terraform Init with backend config
       - name: Terraform Init
         run: |
-          terraform -chdir="${{ env.TF_WORKING_DIR }}" init 
+          # terraform -chdir="${{ env.TF_WORKING_DIR }}" init 
+          terraform init -backend-config="${{ env.TF_WORKING_DIR }}/backend-config.hcl"
         # \
         #   -backend-config="bucket=tf-state-bucket-ci-cd" \
         #   -backend-config="key=infra/terraform.tfstate" \
