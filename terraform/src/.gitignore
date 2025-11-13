@@ -15,3 +15,5 @@ backup/
 .DS_Store
 
 .terraform/
+
+ **/.DS_Store/*
