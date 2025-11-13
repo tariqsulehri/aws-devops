@@ -1,0 +1,19 @@
+# Terraform cache directories
+**/.terraform/*
+# Terraform state files
+*.tfstate
+*.tfstate.*
+# Crash logs
+crash.log
+# Plan output
+*.tfplan
+# Sensitive vars
+*.tfvars
+*.auto.tfvars
+
+backup/
+.DS_Store
+
+.terraform/
+
+ **/.DS_Store/*

@@ -1,0 +1,79 @@
+name: Terraform CI/CD with GitHub Actions
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target deployment environment (dev or prod) '
+        required:  true
+        default: 'dev'
+        type:  choice
+        options:
+          - dev
+          - prod
+      action:
+        description: 'Choose Terraform action'
+        required: true
+        default: 'apply'
+        type: choice
+        options:
+          - apply
+          - destroy  
+
+jobs:
+  terraform:
+    name: Terraform Apply or Destroy
+    runs-on: ubuntu-22.04
+    env:
+      AWS_REGION: "eu-north-1"
+      ADMIN_IP: "125.209.112.98/32"
+      TF_WORKING_DIR: terraform/src
+
+    steps:
+      # 1️⃣ Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2️⃣ Set up Terraform
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.13.5"
+
+      # 3️⃣ Configure AWS credentials using static secrets
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # 4️⃣ Terraform Init with backend config
+      - name: Terraform Init
+        run: |
+          terraform -chdir="${{ env.TF_WORKING_DIR }}" init \
+            -backend-config="bucket=tf-state-bucket-ci-cd" \
+            -backend-config="key=infra/terraform.tfstate" \
+            -backend-config="region=${{ env.AWS_REGION }}" \
+            -backend-config="encrypt=true"
+
+      # 5️⃣ Terraform Format Check
+      - name: Terraform Format
+        run: terraform -chdir=${{ env.TF_WORKING_DIR }} fmt -check
+
+      # 6️⃣ Terraform Validate
+      - name: Terraform Validate
+        run: terraform -chdir=${{ env.TF_WORKING_DIR }} validate
+
+      # 7️⃣ Terraform Plan
+      - name: Terraform Plan
+        run: terraform -chdir=${{ env.TF_WORKING_DIR }} plan
+
+      # 8️⃣ Terraform Apply or Destroy
+      - name: Terraform Apply or Destroy
+        run: |
+          if [ "${{ github.event.inputs.action }}" == "apply" ]; then
+            terraform -chdir=${{ env.TF_WORKING_DIR }} apply -auto-approve
+          else
+            terraform -chdir=${{ env.TF_WORKING_DIR }} destroy -auto-approve
+          fi

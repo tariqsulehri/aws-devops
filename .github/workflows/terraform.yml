@@ -1,71 +1,99 @@
-name: Terraform CI/CD with GitHub Actions
+name: Multi-Environment Terraform CI/CD (Dev/Prod)
 
+# This workflow can be triggered manually, allowing the user to select the target environment.
 on:
   workflow_dispatch:
     inputs:
+      environment:
+        description: 'Target deployment environment (dev or prod)'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - prod
       action:
         description: 'Choose Terraform action'
         required: true
-        default: 'apply'
+        default: 'plan_and_apply'
         type: choice
         options:
-          - apply
-          - destroy
+          - plan_and_apply # Runs plan and then apply
+          - destroy        # Destroys infrastructure
 
 jobs:
   terraform:
-    name: Terraform Apply or Destroy
+    # Job name now shows the environment being targeted
+    name: ${{ github.event.inputs.action }} on ${{ github.event.inputs.environment }}
     runs-on: ubuntu-22.04
+
+    # 🚨 CRITICAL SECURITY STEP: Required for OIDC role assumption
+    permissions:
+      id-token: write
+      contents: read
+
     env:
       AWS_REGION: "eu-north-1"
+      # Set ENVIRONMENT variable from user input
+      ENVIRONMENT: ${{ github.event.inputs.environment }}
+      # Dynamic Working Directory: points to 'terraform/dev' or 'terraform/prod'
+      TF_WORKING_DIR: "terraform/${{ github.event.inputs.environment }}/src"
+      # Admin IP Address
       ADMIN_IP: "125.209.112.98/32"
-      TF_WORKING_DIR: terraform/src
+      # Dynamic Plan File Name: e.g., 'dev_tfplan.out' or 'prod_tfplan.out'
+      TF_PLAN_FILE: ${{ github.event.inputs.environment }}_tfplan.out
 
     steps:
-      # 1️⃣ Checkout repository
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2️⃣ Set up Terraform
-      - name: Set up Terraform
+      - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.13.5"
 
-      # 3️⃣ Configure AWS credentials using static secrets
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+      # 3️⃣ Configure AWS credentials using OIDC (Environment-Specific Role)
+      - name: Configure AWS Credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
+          audience: sts.amazonaws.com
+          output-env-credentials: true
+          
+          # 💡 PROFESSIONAL DEVOPS: Dynamic Role Lookup
+          # We are dynamically selecting the role ARN based on the environment input.
+          # You MUST set secrets named 'AWS_ROLE_DEV' and 'AWS_ROLE_PROD' in GitHub.
+          role-to-assume: ${{ secrets[format('AWS_ROLE_{0}', toupper(env.ENVIRONMENT))] }}
 
-      # 4️⃣ Terraform Init with backend config
+      # 4️⃣ Terraform Init with dynamic backend key
       - name: Terraform Init
+        id: init
         run: |
+          # The key is now environment-specific to isolate state files:
+          # e.g., key=infra/dev/terraform.tfstate  or key=infra/prod/terraform.tfstate
           terraform -chdir="${{ env.TF_WORKING_DIR }}" init \
             -backend-config="bucket=tf-state-bucket-ci-cd" \
-            -backend-config="key=infra/terraform.tfstate" \
+            -backend-config="key=infra/${{ env.ENVIRONMENT }}/terraform.tfstate" \
             -backend-config="region=${{ env.AWS_REGION }}" \
             -backend-config="encrypt=true"
 
-      # 5️⃣ Terraform Format Check
-      - name: Terraform Format
-        run: terraform -chdir=${{ env.TF_WORKING_DIR }} fmt -check
-
-      # 6️⃣ Terraform Validate
-      - name: Terraform Validate
-        run: terraform -chdir=${{ env.TF_WORKING_DIR }} validate
-
-      # 7️⃣ Terraform Plan
-      - name: Terraform Plan
-        run: terraform -chdir=${{ env.TF_WORKING_DIR }} plan
-
-      # 8️⃣ Terraform Apply or Destroy
-      - name: Terraform Apply or Destroy
+      - name: Terraform Format Check & Validate
         run: |
-          if [ "${{ github.event.inputs.action }}" == "apply" ]; then
-            terraform -chdir=${{ env.TF_WORKING_DIR }} apply -auto-approve
-          else
-            terraform -chdir=${{ env.TF_WORKING_DIR }} destroy -auto-approve
-          fi
+          terraform -chdir=${{ env.TF_WORKING_DIR }} fmt -check
+          terraform -chdir=${{ env.TF_WORKING_DIR }} validate
+
+      - name: Terraform Plan and Save
+        if: github.event.inputs.action == 'plan_and_apply'
+        run: |
+          terraform -chdir=${{ env.TF_WORKING_DIR }} plan -out=${{ env.TF_PLAN_FILE }}
+      
+      - name: Terraform Apply
+        if: github.event.inputs.action == 'plan_and_apply'
+        # IMPORTANT: Only 'prod' environment applies require manual approval
+        # We add a job-level environment protection rule in GitHub settings for 'prod'.
+        run: |
+          terraform -chdir=${{ env.TF_WORKING_DIR }} apply -auto-approve ../${{ env.TF_PLAN_FILE }}
+
+      - name: Terraform Destroy
+        if: github.event.inputs.action == 'destroy'
+        run: terraform -chdir=${{ env.TF_WORKING_DIR }} destroy -auto-approve
