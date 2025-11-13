@@ -94,7 +94,8 @@ jobs:
         # IMPORTANT: Only 'prod' environment applies require manual approval
         # We add a job-level environment protection rule in GitHub settings for 'prod'.
         run: |
-          terraform -chdir=${{ env.TF_WORKING_DIR }} apply -auto-approve ../../${{ env.TF_PLAN_FILE }}
+          run: |
+            terraform -chdir=${{ env.TF_WORKING_DIR }} apply -auto-approve ${{ env.TF_PLAN_FILE }}
 
       - name: Terraform Destroy
         if: github.event.inputs.action == 'destroy'
