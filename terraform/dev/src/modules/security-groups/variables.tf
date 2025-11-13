@@ -25,10 +25,10 @@ variable "admin_ip" {
   EOT
   type        = string
 
-  # validation {
-  #   condition     = can(regex("^([0-9]{1,3}\\.){3}[0-9]{1,3}\\/([0-9]|[1-2][0-9]|3[0-2])$", var.admin_ip))
-  #   error_message = "admin_ip must be a valid IPv4 CIDR (for example: 1.2.3.4/32)."
-  # }
+  validation {
+    condition     = can(regex("^([0-9]{1,3}\\.){3}[0-9]{1,3}\\/([0-9]|[1-2][0-9]|3[0-2])$", var.admin_ip))
+    error_message = "admin_ip must be a valid IPv4 CIDR (for example: 1.2.3.4/32)."
+  }
 }
 
 variable "app_port" {

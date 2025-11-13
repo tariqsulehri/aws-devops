@@ -3,7 +3,7 @@ variable "project_name" {
 }
 
 variable "env" {
-  description = "Environment production and staging"
+  description = "Environment development, staging and production"
   type        = string
 }
 variable "private_subnet_ids" {
