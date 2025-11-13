@@ -63,7 +63,7 @@ jobs:
           # 💡 PROFESSIONAL DEVOPS: Dynamic Role Lookup
           # We are dynamically selecting the role ARN based on the environment input.
           # You MUST set secrets named 'AWS_ROLE_DEV' and 'AWS_ROLE_PROD' in GitHub.
-         role-to-assume: "${{ secrets[format('AWS_ROLE_{0}', env.ENVIRONMENT.toUpperCase()] }}"
+         role-to-assume: "${{ secrets[format('AWS_ROLE_{0}', env.ENVIRONMENT.toUpperCase())] }}"
 
 
       # 4️⃣ Terraform Init with dynamic backend key
