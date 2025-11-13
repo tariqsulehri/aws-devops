@@ -10,12 +10,12 @@
 # Creates a VPC, public + private subnets, and outputs IDs
 # ----------------------------------------------------
 # VPC module (keeps the same inputs you were using)
-# module "tf_state" {
-#   source              = "./modules/tf-state"
-#   bucket_name         = "tf-state-bucket-ci-cd"
-#   dynamodb_table_name = "terraform-state-locking"
-#   force_destroy       = true
-# }
+module "tf_state" {
+  source              = "./modules/tf-state"
+  bucket_name         = "tf-state-bucket-ci-cd"
+  dynamodb_table_name = "terraform-state-locking"
+  force_destroy       = true
+}
 
 ##############################################
 # ROOT MAIN - module wiring
@@ -47,6 +47,7 @@ module "vpc" {
 # Creates Admin, Web, and Backend Security Groups
 # ----------------------------------------------------
 
+
 module "security_groups" {
   source       = "./modules/security-groups"
   project_name = var.project_name
@@ -57,12 +58,23 @@ module "security_groups" {
   tags         = var.tags
 }
 
+# --------------------------------------------------------------------------------
+# 4️⃣ Cloudfront Module for Frontend (React)
+# Creates S3 bucket to store react file that could accessable through could front
+# --------------------------------------------------------------------------------
+
+module "s3_cloudfront" {
+  source       = "./modules/s3_cloudfront"
+  project_name = var.project_name
+  env          = var.env
+  tags         = var.tags
+}
+
+
 # ----------------------------------------------------
 # 4️⃣ EC2 Module for Frontend (React)
 # Creates EC2 instance in public subnet
 # ----------------------------------------------------
-
-
 module "frontend_ec2" {
   source        = "./modules/ec2"
   instance_type = "t3.micro"

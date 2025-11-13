@@ -11,3 +11,7 @@ Initalize backend for terraform tfstate file
 #Resources
 =================
 spacelift for terraform deployment
+
+
+
+aws s3 sync dist/ s3://<your-bucket-name> --delete
