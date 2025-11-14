@@ -74,7 +74,6 @@ resource "aws_cloudfront_origin_access_control" "frontend_oac" {
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
   signing_protocol                  = "sigv4"
-
 }
 
 # -----------------------------
@@ -183,14 +182,10 @@ data "aws_iam_policy_document" "frontend_s3_policy" {
     }
   }
 }
+
 resource "aws_s3_bucket_policy" "frontend_bucket_policy" {
   bucket = aws_s3_bucket.frontend_bucket.id
   policy = data.aws_iam_policy_document.frontend_s3_policy.json
-
-  depends_on = [
-    aws_cloudfront_origin_access_control.frontend_oac,
-    aws_cloudfront_distribution.frontend_cdn
-  ]
 }
 
 # -----------------------------

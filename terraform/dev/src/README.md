@@ -1,6 +1,17 @@
 Commands:
  terraform fmt -recursive
 
+ 
+ terraform  init \
+            -backend-config="bucket=tf-state-bucket-ci-cd" \
+            -backend-config="key=infra/dev/terraform.tfstate" \
+            -backend-config="region=eu-north-1" \
+            -backend-config="encrypt=true"
+
+
+terraform plan
+
+
 Bad Practice Example (What NOT to Do)
 
 If you omit variables in the module and directly reference var.project_name inside the module —

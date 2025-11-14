@@ -37,8 +37,8 @@ variable "instance_map" {
 }
 variable "env" {
   type        = string
-  description = "Environment name (production/staging)"
-  default     = "production"
+  description = "Environment name (dev/staging/production)"
+  default     = "dev"
 }
 variable "tags" {
   type        = map(string)

@@ -17,6 +17,20 @@ module "tf_state" {
   force_destroy       = true
 }
 
+
+# --------------------------------------------------------------------------------
+# 4️⃣ Cloudfront Module for Frontend (React)
+# Creates S3 bucket to store react file that could accessable through could front
+# --------------------------------------------------------------------------------
+module "s3_cloudfront" {
+  source       = "./modules/s3_cloudfront"
+  project_name = var.project_name
+  env          = var.env
+  tags         = var.tags
+}
+
+
+
 ##############################################
 # ROOT MAIN - module wiring
 ##############################################
@@ -49,18 +63,6 @@ module "security_groups" {
   vpc_id       = module.vpc.vpc_id
   admin_ip     = var.admin_ip
   app_port     = var.app_port
-  tags         = var.tags
-}
-
-# --------------------------------------------------------------------------------
-# 4️⃣ Cloudfront Module for Frontend (React)
-# Creates S3 bucket to store react file that could accessable through could front
-# --------------------------------------------------------------------------------
-
-module "s3_cloudfront" {
-  source       = "./modules/s3_cloudfront"
-  project_name = var.project_name
-  env          = var.env
   tags         = var.tags
 }
 

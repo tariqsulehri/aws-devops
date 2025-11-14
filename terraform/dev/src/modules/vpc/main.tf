@@ -98,7 +98,10 @@ resource "aws_nat_gateway" "nat_gateways" {
 
   tags = merge(var.tags, { Name = "${local.name_prefix}-nat-${each.key}" })
 
-  depends_on = [aws_internet_gateway.internet_gateway]
+   depends_on = [
+    aws_eip.nat_eip
+  ]
+
 }
 
 ##############################################
